@@ -1,0 +1,321 @@
+/* ══════════════════════════════════
+   محنك الأنمي - ستايل الممالك والأسئلة
+   ══════════════════════════════════ */
+
+/* ─── بطاقة المملكة ─── */
+.kingdom-card {
+  background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-light) 100%);
+  border: 2px solid var(--primary);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+}
+
+.kingdom-card:active {
+  transform: scale(0.97);
+}
+
+.kingdom-card.locked {
+  opacity: 0.5;
+  filter: grayscale(0.7);
+  cursor: not-allowed;
+}
+
+.kingdom-card.locked::after {
+  content: "🔒";
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 26px;
+}
+
+.kingdom-card.completed {
+  border-color: var(--gold);
+  box-shadow: var(--shadow-md), var(--glow-gold);
+}
+
+.kingdom-icon {
+  font-size: 40px;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(168, 85, 247, 0.15);
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+}
+
+.kingdom-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.kingdom-name {
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.kingdom-desc {
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.kingdom-progress {
+  font-size: 12px;
+  color: var(--gold);
+  font-weight: 700;
+}
+
+/* ─── بطاقة الإقليم ─── */
+.province-card {
+  background: var(--bg-card);
+  border: 2px solid var(--primary);
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.province-card:active {
+  transform: scale(0.97);
+}
+
+.province-card.locked {
+  opacity: 0.5;
+  filter: grayscale(0.7);
+  cursor: not-allowed;
+}
+
+.province-card.completed {
+  border-color: var(--gold);
+}
+
+.province-number {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.province-status {
+  font-size: 22px;
+}
+
+/* ─── بطاقة المرحلة ─── */
+.level-card {
+  aspect-ratio: 1;
+  background: var(--bg-card);
+  border: 2px solid var(--primary);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--text);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.level-card:active {
+  transform: scale(0.92);
+}
+
+.level-card.locked {
+  opacity: 0.4;
+  filter: grayscale(1);
+  cursor: not-allowed;
+}
+
+.level-card.completed {
+  background: linear-gradient(135deg, var(--gold), var(--gold-glow));
+  color: #1A1230;
+  border-color: var(--gold-glow);
+  box-shadow: var(--glow-gold);
+}
+
+.level-card.current {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(245, 179, 1, 0.3);
+  animation: blink 1.5s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(245, 179, 1, 0.3); }
+  50% { box-shadow: 0 0 0 6px rgba(245, 179, 1, 0.15); }
+}
+
+/* ─── أزرار الإجابة ─── */
+.answer-btn {
+  background: var(--bg-card);
+  border: 2px solid var(--primary);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  font-family: var(--font);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  cursor: pointer;
+  text-align: right;
+  transition: transform 0.12s ease, background 0.2s ease, border-color 0.2s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.answer-btn:active {
+  transform: scale(0.97);
+}
+
+.answer-btn.correct {
+  background: linear-gradient(135deg, #16A34A, var(--success));
+  border-color: var(--success);
+  color: #fff;
+  box-shadow: 0 0 20px rgba(74, 222, 128, 0.6);
+}
+
+.answer-btn.wrong {
+  background: linear-gradient(135deg, #991B1B, var(--danger));
+  border-color: var(--danger);
+  color: #fff;
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
+}
+
+.answer-btn.disabled {
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+/* ─── مقاطع الكلمة (نوع 2) ─── */
+.syllables-pool {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  padding: 20px 16px;
+  min-height: 80px;
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  margin: 0 16px 16px;
+  border: 2px dashed var(--primary);
+}
+
+.syllable {
+  background: linear-gradient(135deg, var(--primary), var(--primary-glow));
+  color: #fff;
+  font-size: 22px;
+  font-weight: 900;
+  padding: 12px 22px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: transform 0.12s ease, opacity 0.2s ease;
+  box-shadow: var(--shadow-sm);
+  min-width: 50px;
+  text-align: center;
+}
+
+.syllable:active {
+  transform: scale(0.9);
+}
+
+.syllable.used {
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+.syllable-answer {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: 16px;
+  min-height: 70px;
+  background: rgba(168, 85, 247, 0.1);
+  border-radius: var(--radius-md);
+  margin: 0 16px 16px;
+  border: 2px solid var(--primary);
+}
+
+.syllable-slot {
+  width: 44px;
+  height: 54px;
+  border-bottom: 4px solid var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--text);
+}
+
+/* ─── شريط الجوائز ─── */
+.rewards-bar {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  padding: 12px 16px;
+  flex-wrap: wrap;
+}
+
+.reward-slot {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  border: 2px dashed var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  opacity: 0.4;
+}
+
+.reward-slot.earned {
+  opacity: 1;
+  border-style: solid;
+  border-color: var(--gold);
+  background: linear-gradient(135deg, var(--gold), var(--gold-glow));
+  box-shadow: var(--glow-gold);
+}
+
+/* ─── رسالة صح/خطأ ─── */
+.feedback {
+  text-align: center;
+  font-size: 18px;
+  font-weight: 800;
+  padding: 12px;
+  margin: 8px 16px;
+  border-radius: var(--radius-md);
+  animation: popIn 0.3s ease;
+}
+
+.feedback.correct {
+  color: var(--success);
+  background: rgba(74, 222, 128, 0.1);
+  border: 2px solid var(--success);
+}
+
+.feedback.wrong {
+  color: var(--danger);
+  background: rgba(239, 68, 68, 0.1);
+  border: 2px solid var(--danger);
+}
+
+@keyframes popIn {
+  0% { transform: scale(0.7); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
