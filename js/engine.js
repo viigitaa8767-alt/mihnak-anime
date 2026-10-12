@@ -1,5 +1,5 @@
 /* ══════════════════════════════════
-   محنك الأنمي - محرك اللعبة
+   محنك الأنمي - محرك اللعبة (نسخة جديدة)
    إدارة الأسئلة وتشغيل المراحل
    ══════════════════════════════════ */
 
@@ -18,7 +18,7 @@ const session = {
 // عدد الأسئلة في كل مرحلة
 const QUESTIONS_PER_LEVEL = 5;
 
-// ═══ خلط المصفوفة (Fisher-Yates) ═══
+// ═══ خلط المصفوفة ═══
 function shuffleArray(arr) {
   const a = arr.slice();
   for (let i = a.length - 1; i > 0; i--) {
@@ -26,6 +26,21 @@ function shuffleArray(arr) {
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
+}
+
+// ═══ جلب بنك أسئلة مملكة ═══
+function getKingdomBank(kingdomId) {
+  try {
+    if (kingdomId === 1 && typeof KINGDOM_1 !== 'undefined') return KINGDOM_1;
+    if (kingdomId === 2 && typeof KINGDOM_2 !== 'undefined') return KINGDOM_2;
+    if (kingdomId === 3 && typeof KINGDOM_3 !== 'undefined') return KINGDOM_3;
+    if (kingdomId === 4 && typeof KINGDOM_4 !== 'undefined') return KINGDOM_4;
+    if (kingdomId === 5 && typeof KINGDOM_5 !== 'undefined') return KINGDOM_5;
+    if (kingdomId === 6 && typeof KINGDOM_6 !== 'undefined') return KINGDOM_6;
+  } catch (e) {
+    console.error('خطأ في جلب بنك المملكة:', e);
+  }
+  return null;
 }
 
 // ═══ بدء مرحلة جديدة ═══
@@ -36,25 +51,29 @@ function startLevel(kingdomId, provinceId, levelId, onFinish) {
   session.currentIndex = 0;
   session.correctCount = 0;
   session.onFinish = onFinish;
+  session.questions = [];
 
-  // جلب بنك الأسئلة للمملكة
   const bank = getKingdomBank(kingdomId);
-  if (!bank || !bank.questions || bank.questions.length === 0) {
-    session.questions = [];
-    if (onFinish) onFinish(0, 0);
+  if (!bank || !bank.byProvince) {
+    console.error('مفيش بنك أسئلة للمملكة:', kingdomId);
+    session.totalQuestions = 0;
+    if (onFinish) onFinish(0, 0, false);
     return;
   }
 
-  // فلترة الأسئلة حسب الإقليم (لو في بنك مقسّم)
-  let pool = bank.questions;
-  if (bank.byProvince && bank.byProvince[provinceId]) {
-    pool = bank.byProvince[provinceId];
+  let pool = bank.byProvince[provinceId];
+  if (!pool || pool.length === 0) {
+    console.error('مفيش أسئلة للإقليم:', kingdomId, provinceId);
+    session.totalQuestions = 0;
+    if (onFinish) onFinish(0, 0, false);
+    return;
   }
 
-  // خلط واختيار عدد الأسئلة المطلوب
   const shuffled = shuffleArray(pool);
   session.questions = shuffled.slice(0, Math.min(QUESTIONS_PER_LEVEL, shuffled.length));
   session.totalQuestions = session.questions.length;
+
+  console.log('بدأنا مرحلة بعدد أسئلة:', session.totalQuestions);
 }
 
 // ═══ جلب سؤال حالي ═══
@@ -73,36 +92,16 @@ function registerCorrect() {
   session.correctCount++;
 }
 
-// ═══ هل المرحلة خلصت؟ ═══
-function isLevelDone() {
-  return session.currentIndex >= session.totalQuestions;
-}
-
 // ═══ إنهاء المرحلة ═══
 function finishLevel() {
   const total = session.totalQuestions;
   const correct = session.correctCount;
   const percent = total > 0 ? (correct / total) * 100 : 0;
-
-  // نجاح لو اللاعب جاوب على 60% أو أكثر صح
   const passed = percent >= 60;
 
-  // حفظ التقدم لو نجح
   if (passed) {
     markLevelComplete(session.kingdomId, session.provinceId, session.levelId);
     addScore(correct * 10);
-
-    // هل الإقليم خلص؟
-    if (isProvinceComplete(session.kingdomId, session.provinceId)) {
-      // جائزة الإقليم
-      const bank = getKingdomBank(session.kingdomId);
-      if (bank && bank.rewards) {
-        const rewardIndex = session.provinceId - 1;
-        if (bank.rewards[rewardIndex]) {
-          addReward(bank.rewards[rewardIndex].id || session.kingdomId);
-        }
-      }
-    }
   }
 
   if (session.onFinish) {
@@ -112,20 +111,7 @@ function finishLevel() {
   return { correct, total, passed, percent };
 }
 
-// ═══ جلب بنك أسئلة مملكة ═══
-function getKingdomBank(kingdomId) {
-  const banks = {
-    1: typeof KINGDOM_1 !== 'undefined' ? KINGDOM_1 : null,
-    2: typeof KINGDOM_2 !== 'undefined' ? KINGDOM_2 : null,
-    3: typeof KINGDOM_3 !== 'undefined' ? KINGDOM_3 : null,
-    4: typeof KINGDOM_4 !== 'undefined' ? KINGDOM_4 : null,
-    5: typeof KINGDOM_5 !== 'undefined' ? KINGDOM_5 : null,
-    6: typeof KINGDOM_6 !== 'undefined' ? KINGDOM_6 : null
-  };
-  return banks[kingdomId] || null;
-}
-
-// ═══ جلب بيانات الممالك ═══
+// ═══ بيانات الممالك ═══
 function getKingdomsMeta() {
   return [
     { id: 1, name: 'الغيلان', icon: '👹', desc: 'مستوحى من طوكيو غول', provinces: 2, color: '#A855F7' },
@@ -137,7 +123,7 @@ function getKingdomsMeta() {
   ];
 }
 
-// ═══ جلب اسم إقليم ═══
+// ═══ اسم إقليم ═══
 function getProvinceName(kingdomId, provinceId) {
   const names = {
     1: ['القهوة', 'الغيلان'],
