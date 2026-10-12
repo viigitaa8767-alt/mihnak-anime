@@ -1,6 +1,6 @@
 /* ══════════════════════════════════
-   محنك الأنمي - واجهة المستخدم
-   رسم الشاشات والأزرار
+   محنك الأنمي - واجهة المستخدم (نسخة محدّثة)
+   تدعم أنواع الأسئلة: choice / syllables / emoji
    ══════════════════════════════════ */
 
 // ═══ التبديل بين الشاشات ═══
@@ -31,7 +31,6 @@ function renderKingdoms() {
     card.className = 'kingdom-card' + (unlocked ? '' : ' locked');
     if (gameState.rewards.includes(k.id)) card.classList.add('completed');
 
-    // حساب التقدم
     let doneProvinces = 0;
     for (let p = 1; p <= k.provinces; p++) {
       if (isProvinceComplete(k.id, p)) doneProvinces++;
@@ -56,7 +55,7 @@ function renderKingdoms() {
   });
 }
 
-// ═══ فتح مملكة (عرض الأقاليم) ═══
+// ═══ فتح مملكة ═══
 let currentKingdomId = 1;
 function openKingdom(kingdomId) {
   currentKingdomId = kingdomId;
@@ -99,7 +98,7 @@ function renderProvinces(kingdomId, totalProvinces) {
   }
 }
 
-// ═══ فتح إقليم (عرض المراحل) ═══
+// ═══ فتح إقليم ═══
 let currentProvinceId = 1;
 function openProvince(kingdomId, provinceId) {
   currentProvinceId = provinceId;
@@ -156,13 +155,12 @@ function renderQuestion() {
   document.getElementById('q-progress').style.width = pct + '%';
   document.getElementById('quiz-score').textContent = session.correctCount;
 
-  // نوع السؤال
-  if (q.type === 'image') {
-    const img = document.createElement('img');
-    img.src = q.image;
-    img.className = 'question-image';
-    img.alt = '';
-    questionArea.appendChild(img);
+  // عرض السؤال حسب النوع
+  if (q.type === 'emoji') {
+    const iconDiv = document.createElement('div');
+    iconDiv.className = 'question-emoji';
+    iconDiv.textContent = q.icon || '❓';
+    questionArea.appendChild(iconDiv);
   }
 
   const text = document.createElement('div');
@@ -170,15 +168,13 @@ function renderQuestion() {
   text.textContent = q.question;
   questionArea.appendChild(text);
 
-  // حسب نوع السؤال
+  // عرض الإجابات
   if (q.type === 'syllables') {
     renderSyllables(q, answersArea);
   } else {
     renderChoices(q, answersArea);
   }
-}
-
-// ═══ عرض اختيارات (نوع 1) ═══
+}// ═══ عرض اختيارات (choice / emoji) ═══
 function renderChoices(q, container) {
   const choices = shuffleArray(q.choices);
   choices.forEach(choice => {
@@ -202,7 +198,6 @@ function handleChoiceAnswer(btn, choice, answer) {
   } else {
     btn.classList.add('wrong');
     sfxWrong();
-    // إظهار الإجابة الصحيحة
     allBtns.forEach(b => {
       if (b.textContent === answer) b.classList.add('correct');
     });
@@ -211,21 +206,18 @@ function handleChoiceAnswer(btn, choice, answer) {
   setTimeout(() => proceedNext(), 1400);
 }
 
-// ═══ عرض مقاطع (نوع 2) ═══
+// ═══ عرض مقاطع (syllables) ═══
 function renderSyllables(q, container) {
-  // شريط الإجابة الفاضية
   const answerBar = document.createElement('div');
   answerBar.className = 'syllable-answer';
   answerBar.id = 'syllable-answer';
   container.appendChild(answerBar);
 
-  // حوض المقاطع
   const pool = document.createElement('div');
   pool.className = 'syllables-pool';
   pool.id = 'syllables-pool';
   container.appendChild(pool);
 
-  // زر تأكيد
   const confirmBtn = document.createElement('button');
   confirmBtn.className = 'btn btn-primary';
   confirmBtn.style.margin = '0 16px';
@@ -235,9 +227,8 @@ function renderSyllables(q, container) {
   container.appendChild(confirmBtn);
 
   const chosen = [];
-
-  // خلط المقاطع
   const shuffled = shuffleArray(q.syllables);
+
   shuffled.forEach((syl, i) => {
     const s = document.createElement('div');
     s.className = 'syllable';
@@ -260,7 +251,6 @@ function renderSyllables(q, container) {
       slot.className = 'syllable-slot';
       slot.textContent = item.text;
       slot.addEventListener('click', () => {
-        // إزالة المقطع
         sfxClick();
         item.el.classList.remove('used');
         chosen.splice(idx, 1);
@@ -283,10 +273,10 @@ function renderSyllables(q, container) {
     } else {
       sfxWrong();
       answerBar.style.borderColor = 'var(--danger)';
-      // إظهار الإجابة الصحيحة
       clearElement(answerBar);
       const correct = document.createElement('div');
-      correct.style.cssText = 'color: var(--success); font-weight: 900; font-size: 20px; padding: 10px;';
+      correct.style.cssText =
+        'color: var(--success); font-weight: 900; font-size: 20px; padding: 10px;';
       correct.textContent = correctAnswer;
       answerBar.appendChild(correct);
     }
@@ -324,11 +314,9 @@ function showResult(correct, total, passed) {
   nextBtn.onclick = () => {
     sfxClick();
     if (passed) {
-      // نرجع للمراحل
       renderLevels(session.kingdomId, session.provinceId);
       showScreen('screen-levels');
     } else {
-      // نعيد المرحلة
       launchQuiz(session.kingdomId, session.provinceId, session.levelId);
     }
   };
@@ -336,16 +324,11 @@ function showResult(correct, total, passed) {
   showScreen('screen-result');
 }
 
-// ═══ بدء المرحلة (ربط المحرك بالواجهة) ═══
+// ═══ بدء المرحلة ═══
 function launchQuiz(kingdomId, provinceId, levelId) {
   startLevel(kingdomId, provinceId, levelId, (correct, total, passed) => {
     showResult(correct, total, passed);
   });
   showScreen('screen-quiz');
   renderQuestion();
-}
-
-// ═══ تحديث الجوائز ═══
-function renderRewardsBar() {
-  // يظهر لاحقًا في شاشة الممالك
 }
